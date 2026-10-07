@@ -1,0 +1,58 @@
+body {
+  background: lightblue;
+  color: black;
+}
+
+h2 {
+  text-align: center;
+}
+
+a,
+a:visited {
+  color: blue;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+.yearLinks {
+  text-align: center;
+  padding-bottom: 20px;
+  font-weight: bold;
+}
+
+#puzzles {
+  width: 100%;
+  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 200px);
+  grid-gap: 10px;
+}
+
+.puzzle {
+  background: #21f387a3;
+  border: 2px solid rgb(0, 122, 31);
+  padding: 5px;
+  text-align: center;
+}
+
+.dayTitle {
+  font-weight: bold;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: rgb(4, 4, 95);
+    color: lightgray;
+  }
+
+  .puzzle {
+    background: #4cb47ea3;
+  }
+
+  a,
+  a:visited {
+    color: lightcoral;
+  }
+}
