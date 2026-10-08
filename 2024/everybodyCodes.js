@@ -159,15 +159,97 @@ const quest2part3 = (input) => {
 // =============================================================================
 
 const quest3part1 = (input) => {
-  return 'incomplete';
+  let digs = 0;
+  let grid = input.split('\n').map((row, y) => {
+    return row.split('').map((el, x) => {
+      if (el === '.') {
+        return 0;
+      } else {
+        digs++;
+        return 1;
+      }
+    });
+  });
+
+  let depth = 1;
+  let canDig = true;
+  while (canDig) {
+    canDig = false;
+    const newGrid = [...grid.map((row) => row.slice())];
+    for (let i = 1; i < grid.length - 1; i++) {
+      for (let j = 1; j < grid[0].length - 1; j++) {
+        if (grid[i][j] !== depth) continue;
+        if (
+          grid[i - 1][j] === depth &&
+          grid[i + 1][j] === depth &&
+          grid[i][j - 1] === depth &&
+          grid[i][j + 1] === depth
+        ) {
+          newGrid[i][j]++;
+          canDig = true;
+          digs++;
+        }
+      }
+    }
+    depth++;
+    grid = newGrid;
+  }
+  console.log(grid);
+  return digs;
 };
 
 const quest3part2 = (input) => {
-  return 'incomplete';
+  return quest3part1(input);
 };
 
 const quest3part3 = (input) => {
-  return 'incomplete';
+  let digs = 0;
+  let grid = input.split('\n').map((row, y) => {
+    const nums = row.split('').map((el, x) => {
+      if (el === '.') {
+        return 0;
+      } else {
+        digs++;
+        return 1;
+      }
+    });
+    // wrap the edges with an empty column
+    return [0, ...nums, 0];
+  });
+  const emptyRow = Array(grid[0].length).fill(0);
+  // Add an empty row above and below
+  grid.unshift(emptyRow);
+  grid.push(emptyRow);
+
+  let depth = 1;
+  let canDig = true;
+  while (canDig) {
+    canDig = false;
+    const newGrid = [...grid.map((row) => row.slice())];
+    for (let i = 1; i < grid.length - 1; i++) {
+      for (let j = 1; j < grid[0].length - 1; j++) {
+        if (grid[i][j] !== depth) continue;
+        if (
+          grid[i - 1][j - 1] === depth &&
+          grid[i - 1][j] === depth &&
+          grid[i - 1][j + 1] === depth &&
+          grid[i][j - 1] === depth &&
+          grid[i][j + 1] === depth &&
+          grid[i + 1][j - 1] === depth &&
+          grid[i + 1][j] === depth &&
+          grid[i + 1][j + 1] === depth
+        ) {
+          newGrid[i][j]++;
+          canDig = true;
+          digs++;
+        }
+      }
+    }
+    depth++;
+    grid = newGrid;
+  }
+  console.log(grid);
+  return digs;
 };
 
 // =============================================================================
@@ -175,15 +257,33 @@ const quest3part3 = (input) => {
 // =============================================================================
 
 const quest4part1 = (input) => {
-  return 'incomplete';
+  const heights = input.split('\n').map((el) => +el);
+  const min = Math.min(...heights);
+  let swings = 0;
+  for (const h of heights) {
+    swings += h - min;
+  }
+  return swings;
 };
 
 const quest4part2 = (input) => {
-  return 'incomplete';
+  return quest4part1(input);
 };
 
 const quest4part3 = (input) => {
-  return 'incomplete';
+  const heights = input
+    .split('\n')
+    .map((el) => +el)
+    .sort((a, b) => a - b);
+
+  const median = heights[Math.ceil(heights.length / 2) - 1];
+  console.log({ median });
+
+  let swings = 0;
+  for (const h of heights) {
+    swings += Math.abs(h - median);
+  }
+  return swings;
 };
 
 // =============================================================================
