@@ -53,15 +53,105 @@ const quest1part3 = (input) => {
 // =============================================================================
 
 const quest2part1 = (input) => {
-  return 'incomplete';
+  const lines = input.split('\n\n');
+  const words = lines[0].slice(6).split(',');
+  const inscription = lines[1];
+
+  let runes = 0;
+  for (const word of words) {
+    runes += inscription.split(word).length - 1;
+  }
+  return runes;
 };
 
 const quest2part2 = (input) => {
-  return 'incomplete';
+  const toParse = input.split('\n\n');
+  const words = toParse[0].slice(6).split(',');
+  const lines = toParse[1].split('\n');
+
+  let runeCount = 0;
+  for (const line of lines) {
+    const runes = new Set();
+    for (let i = 0; i < line.length; i++) {
+      words.forEach((word) => {
+        if (line.slice(i).startsWith(word)) {
+          word.split('').forEach((_, idx) => {
+            runes.add(i + idx);
+          });
+        } else {
+          const backwards = word.split('').reverse().join('');
+          if (line.slice(i).startsWith(backwards)) {
+            word.split('').forEach((_, idx) => {
+              runes.add(i + idx);
+            });
+          }
+        }
+      });
+    }
+    runeCount += runes.size;
+  }
+  return runeCount;
 };
 
 const quest2part3 = (input) => {
-  return 'incomplete';
+  const [words, grid] = input.split('\n\n').map((el, i) => {
+    if (i === 0) {
+      return el.slice(6).split(',');
+    } else {
+      return el.split('\n');
+    }
+  });
+
+  const runes = new Set();
+
+  // Rows
+  grid.forEach((row, y) => {
+    const wrapped = `${row}${row}`;
+    for (let i = 0; i < row.length; i++) {
+      words.forEach((word) => {
+        if (wrapped.slice(i).startsWith(word)) {
+          word.split('').forEach((_, idx) => {
+            const x = (i + idx) % row.length;
+            runes.add(xyToString(x, y));
+          });
+        } else {
+          const backwards = word.split('').reverse().join('');
+          if (wrapped.slice(i).startsWith(backwards)) {
+            backwards.split('').forEach((_, idx) => {
+              const x = (i + idx) % row.length;
+              runes.add(xyToString(x, y));
+            });
+          }
+        }
+      });
+    }
+  });
+
+  // Columns
+  const swappedGrid = reverseGrid(grid);
+
+  swappedGrid.forEach((col, y) => {
+    for (let i = 0; i < col.length; i++) {
+      words.forEach((word) => {
+        if (col.slice(i).startsWith(word)) {
+          word.split('').forEach((_, idx) => {
+            const x = (i + idx) % col.length;
+            runes.add(xyToString(y, x)); // swapped
+          });
+        } else {
+          const backwards = word.split('').reverse().join('');
+          if (col.slice(i).startsWith(backwards)) {
+            word.split('').forEach((_, idx) => {
+              const x = (i + idx) % col.length;
+              runes.add(xyToString(y, x)); // swapped
+            });
+          }
+        }
+      });
+    }
+  });
+
+  return runes.size;
 };
 
 // =============================================================================
