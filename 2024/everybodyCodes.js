@@ -290,16 +290,206 @@ const quest4part3 = (input) => {
 // QUEST 5
 // =============================================================================
 
-const quest5part1 = (input) => {
-  return 'incomplete';
+const quest5part1 = (input, rds = 10) => {
+  const columns = [];
+  input.split('\n').forEach((row) => {
+    row.split(' ').forEach((num, i) => {
+      columns[i] ??= [];
+      columns[i].push(+num);
+    });
+  });
+
+  let c = 0;
+  let shout = 'not set';
+  for (let rd = 1; rd <= rds; rd++) {
+    const clapper = columns[c].shift();
+    c++;
+    c %= 4;
+
+    shout = clapRound(clapper, columns, c);
+    console.log(`Rd ${rd}: ${shout}`);
+  }
+  return shout;
+};
+
+const clapRound = (clapper, columns, c) => {
+  const col = columns[c];
+  const newLoc = (clapper - 1) % (col.length * 2);
+  const idx = newLoc <= col.length ? newLoc : col.length * 2 - newLoc;
+  col.splice(idx, 0, clapper);
+
+  const shout = columns.map((c) => c[0]).join('');
+  return shout;
 };
 
 const quest5part2 = (input) => {
-  return 'incomplete';
+  const columns = [];
+  input.split('\n').forEach((row) => {
+    row.split(' ').forEach((num, i) => {
+      columns[i] ??= [];
+      columns[i].push(+num);
+    });
+  });
+
+  let c = 0;
+  let rd = 0;
+  let shout = 'not set';
+  const shouted = {};
+  while (true) {
+    const clapper = columns[c].shift();
+    rd++;
+    c++;
+    c %= 4;
+
+    shout = clapRound(clapper, columns, c);
+    shouted[shout] ??= 0;
+    shouted[shout]++;
+    if (shouted[shout] === 2024) {
+      console.log({ rd, shout });
+      return rd * shout;
+    }
+  }
+  return 'not found';
 };
 
-const quest5part3 = (input) => {
-  return 'incomplete';
+const quest5part3 = (input) => brentsAlg(input);
+
+/**
+ * Solves q5p3 using Brent's algorithm for cycle detection.
+ * Uses two pointers, one stationary and one that moves.
+ * After each move, we check if the mover matches the stationary.
+ * We do this for the current "window size", then move the stationary
+ * pointer up to match the mover. The window size increases by a power
+ * of two each time, so it goes from 1,2,4,8,16...
+ *
+ * Faster than Floyd's algorithm as long as computing steps is more difficult
+ * than checking if the two items match. We only have to compute each step once,
+ * however we do check for matches more frequently. We also are likely to find
+ * the cycle a whole cycle earlier than Floyd's.
+ */
+const brentsAlg = (input) => {
+  const columns = [];
+  input.split('\n').forEach((row) => {
+    row.split(' ').forEach((num, i) => {
+      columns[i] ??= [];
+      columns[i].push(+num);
+    });
+  });
+
+  let c = 0;
+  let rd = 0;
+  let power = 0;
+  let cycle = false;
+  let maxShout = '0';
+  let tortoiseShout = '';
+
+  while (!cycle) {
+    let shout = '';
+    const tortoise = JSON.stringify(columns);
+    for (let i = 0; i < 2 ** power; i++) {
+      rd++;
+
+      const clapper = columns[c].shift();
+      c++;
+      c %= 4;
+
+      shout = clapRound(clapper, columns, c);
+
+      if (shout.localeCompare(maxShout, undefined, { numeric: true }) > 0) {
+        maxShout = shout;
+        console.log(`New max: ${shout}. Rd: ${rd}`);
+      }
+
+      // stringifying the columns takes CPU, so only check
+      // the whole grid if the shouts match
+      // Without the outer conditional, Floyd's was faster despite
+      // Brent's finding the cycle earlier
+      if (shout === tortoiseShout) {
+        if (JSON.stringify(columns) === tortoise) {
+          console.log(`Found the cycle at rd ${rd}`);
+          cycle = true;
+          break;
+        }
+      }
+    }
+    power++;
+    tortoiseShout = shout;
+  }
+
+  return maxShout;
+};
+
+/**
+ * Solves q5p3 using Floyd's tortoise and hare algorithm
+ * to detect the cycle. This method has a tortoise go one step
+ * and a hare go two steps on each iteration. When they're both
+ * on the same spot (have identical grids), the hare has lapped
+ * the tortoise, completing a cycle.
+ *
+ * Slower than Brent's if calculating a step is costly, since we have to
+ * calculate both the tortoise and the hare's movements, duplicating step computations
+ */
+const floydsAlg = (input) => {
+  const columns = [];
+  input.split('\n').forEach((row) => {
+    row.split(' ').forEach((num, i) => {
+      columns[i] ??= [];
+      columns[i].push(+num);
+    });
+  });
+
+  let rd = 0;
+  let maxShout = '0';
+  let tortoise = {
+    columns: [...columns.map((col) => [...col])],
+    c: 0,
+  };
+  let hare = {
+    columns: [...columns.map((col) => [...col])],
+    c: 0,
+  };
+
+  while (true) {
+    rd++;
+
+    const tortoiseClapper = tortoise.columns[tortoise.c].shift();
+    tortoise.c++;
+    tortoise.c %= 4;
+
+    clapRound(tortoiseClapper, tortoise.columns, tortoise.c);
+
+    let hareClapper = hare.columns[hare.c].shift();
+    hare.c++;
+    hare.c %= 4;
+
+    let hareShout = clapRound(hareClapper, hare.columns, hare.c);
+
+    if (hareShout.localeCompare(maxShout, undefined, { numeric: true }) > 0) {
+      maxShout = hareShout;
+      console.log(`New max: ${maxShout}. Rd: ${rd}`);
+    }
+
+    hareClapper = hare.columns[hare.c].shift();
+    hare.c++;
+    hare.c %= 4;
+
+    hareShout = clapRound(hareClapper, hare.columns, hare.c);
+
+    if (hareShout.localeCompare(maxShout, undefined, { numeric: true }) > 0) {
+      maxShout = hareShout;
+      console.log(`New max: ${maxShout}. Rd: ${rd}`);
+    }
+
+    if (JSON.stringify(hare.columns) === JSON.stringify(tortoise.columns)) {
+      console.log(`Found the cycle at rd ${rd}`);
+      break;
+    }
+
+    if (rd % 10000 === 0) {
+      console.log(rd);
+    }
+  }
+  return maxShout;
 };
 
 // =============================================================================
