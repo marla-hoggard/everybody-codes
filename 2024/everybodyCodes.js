@@ -497,15 +497,18 @@ const floydsAlg = (input) => {
 // =============================================================================
 
 const quest6part1 = (input) => {
-  return 'incomplete';
+  const fruitTree = new FruitTree({ input, fullNames: true });
+  return fruitTree.uniquePath;
 };
 
 const quest6part2 = (input) => {
-  return 'incomplete';
+  const fruitTree = new FruitTree({ input });
+  return fruitTree.uniquePath;
 };
 
 const quest6part3 = (input) => {
-  return 'incomplete';
+  const fruitTree = new FruitTree({ input, ignorePests: true });
+  return fruitTree.uniquePath;
 };
 
 // =============================================================================
