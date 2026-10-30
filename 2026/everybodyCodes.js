@@ -3,15 +3,48 @@
 // =============================================================================
 
 const quest1part1 = (input) => {
-  return 'incomplete';
+  let needs = 0;
+  input.split(',').map((el) => {
+    const val = Number(el);
+    let nextSquare = 1;
+    const squared = nextSquare * nextSquare;
+    while (val > squared) {
+      nextSquare++;
+    }
+    needs += squared - val;
+  });
+  return needs;
 };
 
 const quest1part2 = (input) => {
-  return 'incomplete';
+  let needs = 0;
+  input.split(',').map((el) => {
+    const val = Number(el);
+    let nextSquare = 3;
+    let frame = nextSquare * nextSquare - (nextSquare - 2) * (nextSquare - 2);
+    while (val > frame) {
+      nextSquare++;
+      frame = nextSquare * nextSquare - (nextSquare - 2) * (nextSquare - 2);
+    }
+    needs += frame - val;
+  });
+  return needs;
 };
 
 const quest1part3 = (input) => {
-  return 'incomplete';
+  let needs = 0;
+  input.split(',').map((el) => {
+    const val = Number(el);
+    let nextSquare = 3;
+    let frame = nextSquare * nextSquare - 1;
+    while (val > frame) {
+      nextSquare += 2;
+      frame = nextSquare * nextSquare - 1;
+    }
+    // console.log({ val, nextSquare, needs: frame - val });
+    needs += frame - val;
+  });
+  return needs;
 };
 
 // =============================================================================
@@ -19,15 +52,111 @@ const quest1part3 = (input) => {
 // =============================================================================
 
 const quest2part1 = (input) => {
-  return 'incomplete';
+  const lines = input.split('\n');
+  let checkSum = 0;
+  lines.forEach((line) => {
+    const nums = Object.entries(parseQuest2Line(line)).map(
+      ([num, { comesBefore, comesAfter }]) => ({
+        num,
+        comesAfter,
+      }),
+    );
+
+    let ordered = [];
+
+    while (nums.length) {
+      const nextIndex = nums.findIndex((el) => el.comesAfter.every((num) => ordered.includes(num)));
+      if (nextIndex === -1) {
+        throw new Error("No one's next");
+      }
+      const next = nums[nextIndex];
+      ordered.push(next.num);
+      nums.splice(nextIndex, 1);
+    }
+    const order = ordered.join('');
+    checkSum += +order;
+  });
+  return checkSum;
 };
 
 const quest2part2 = (input) => {
-  return 'incomplete';
+  return quest2part1(input);
 };
 
 const quest2part3 = (input) => {
-  return 'incomplete';
+  return quest2part1(input);
+};
+
+const parseQuest2Line = (line) => {
+  const nums = {};
+  const comps = line.split(' ').forEach((pair) => {
+    const [a, b] = pair.split(/[<>]/);
+    nums[a] ??= { comesBefore: [], comesAfter: [] };
+    nums[b] ??= { comesBefore: [], comesAfter: [] };
+
+    if (pair.includes('<')) {
+      nums[a].comesAfter.push(b);
+      nums[b].comesBefore.push(a);
+    } else {
+      nums[a].comesBefore.push(b);
+      nums[b].comesAfter.push(a);
+    }
+  });
+  return nums;
+};
+
+// Works for parts 1-2 but not 3
+const quest2part1Alternate = (input) => {
+  const lines = input.split('\n');
+  let checkSum = 0;
+  lines.forEach((line) => {
+    const nums = parseQuest2Line(line);
+    const order = Object.keys(nums)
+      .sort((a, b) => {
+        if (nums[a].comesBefore.includes(b)) {
+          return -1;
+        } else if (nums[a].comesAfter.includes(b)) {
+          return 1;
+          // }  else if (nums[b].comesBefore.includes(a)) {
+          //   return 1;
+          // } else if (nums[b].comesAfter.includes(a)) {
+          //   return -1;
+        } else {
+          // for (const afterA of nums[a].comesBefore) {
+          //   if (nums[b].comesAfter.includes(afterA)) {
+          //     nums[a].comesBefore.push(b);
+          //     nums[b].comesAfter.push(a);
+          //     return -1;
+          //   }
+          // }
+          // for (const beforeA of nums[a].comesAfter) {
+          //   if (nums[b].comesBefore.includes(beforeA)) {
+          //     nums[a].comesAfter.push(b);
+          //     nums[b].comesBefore.push(a);
+          //     return 1;
+          //   }
+          // }
+          // for (const afterB of nums[b].comesBefore) {
+          //   if (nums[a].comesAfter.includes(afterB)) {
+          //     nums[a].comesAfter.push(b);
+          //     nums[b].comesBefore.push(a);
+          //     return 1;
+          //   }
+          // }
+          // for (const beforeB of nums[b].comesAfter) {
+          //   if (nums[a].comesBefore.includes(beforeB)) {
+          //     nums[a].comesBefore.push(b);
+          //     nums[b].comesAfter.push(a);
+          //     return -1;
+          //   }
+          // }
+          throw new Error(`Still none? ${a},${b}`);
+        }
+      })
+      .join('');
+    checkSum += +order;
+  });
+  return checkSum;
 };
 
 // =============================================================================
